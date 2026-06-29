@@ -102,10 +102,16 @@ CHECKPOINTER=memory
 ## Chạy
 
 ```bash
-make run-scenarios     # chạy 7 kịch bản → outputs/metrics.json + reports/lab_report.md
-make grade-local       # validate schema metrics
+make run-scenarios     # chạy 7 kịch bản mẫu → outputs/metrics.json + reports/lab_report.md
+make grade-local       # validate schema metrics kịch bản mẫu
 make test              # pytest
 make web               # mở web UI tại http://127.0.0.1:8000
+
+# Chạy bộ grading (ẩn):
+python -m langgraph_agent_lab.cli run-scenarios --config configs/grading.yaml --output outputs/metrics_grading.json
+
+# Validate bộ grading:
+python -m langgraph_agent_lab.cli validate-metrics --metrics outputs/metrics_grading.json
 ```
 
 ### Web UI (`python web/app.py`)
@@ -124,18 +130,18 @@ make web               # mở web UI tại http://127.0.0.1:8000
 `data/sample/scenarios.jsonl` gồm 7 kịch bản phủ 6 tình huống chuẩn (simple, tool,
 missing-info, risky/HITL, transient-error→retry, max-error→dead-letter).
 
-| Kịch bản | Tuyến mong đợi | Thực tế | OK | Thử lại | Phê duyệt |
-|---|---|---|:--:|--:|:--:|
-| S01_simple | simple | simple | ✅ | 0 | — |
-| S02_tool | tool | tool | ✅ | 0 | — |
-| S03_missing | missing_info | missing_info | ✅ | 0 | — |
-| S04_risky | risky | risky | ✅ | 0 | có |
-| S05_error | error | error | ✅ | 2 | — |
-| S06_delete | risky | risky | ✅ | 0 | có |
-| S07_dead_letter | error | error | ✅ | 1 | — |
+| Scenario | Expected | Actual | Success | Retries | Interrupts | Appr. req | Appr. seen |
+|---|---|---|:--:|--:|--:|:--:|:--:|
+| S01_simple | simple | simple | ✅ | 0 | 0 | no | no |
+| S02_tool | tool | tool | ✅ | 0 | 0 | no | no |
+| S03_missing | missing_info | missing_info | ✅ | 0 | 0 | no | no |
+| S04_risky | risky | risky | ✅ | 0 | 1 | yes | yes |
+| S05_error | error | error | ✅ | 1 | 0 | no | no |
+| S06_delete | risky | risky | ✅ | 0 | 1 | yes | yes |
+| S07_dead_letter | error | error | ✅ | 1 | 0 | no | no |
 
 **Tỉ lệ thành công: 100%.** Routing dựa trên phân loại LLM + logic state, không hard-code
-theo ID kịch bản.
+theo ID kịch bản. (Số lần thử lại của kịch bản lỗi S05_error giảm từ 2 xuống 1 do đã bỏ phần giả lập lỗi công cụ tạm thời).
 
 ---
 
