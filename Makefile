@@ -1,4 +1,7 @@
-.PHONY: install test lint typecheck run-scenarios grade-local clean
+.PHONY: install test lint typecheck run-scenarios grade-local web clean
+
+web:
+	python web/app.py
 
 install:
 	pip install -e '.[dev]'

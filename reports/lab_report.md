@@ -1,36 +1,15 @@
-"""Report generation helper.
-
-TODO(student): implement report rendering using MetricsReport data
-and the template in reports/lab_report_template.md.
-"""
-
-from __future__ import annotations
-
-from pathlib import Path
-
-from .metrics import MetricsReport
-
-
-def render_report(metrics: MetricsReport) -> str:
-    """Render a complete lab report (markdown) from metrics data."""
-    rows = "\n".join(
-        f"| {m.scenario_id} | {m.expected_route} | {m.actual_route} | "
-        f"{'✅' if m.success else '❌'} | {m.retry_count} | {m.interrupt_count} | "
-        f"{'yes' if m.approval_required else 'no'} | {'yes' if m.approval_observed else 'no'} |"
-        for m in metrics.scenario_metrics
-    )
-    return f"""# Day 08 Lab Report — LangGraph Support-Ticket Agent
+# Day 08 Lab Report — LangGraph Support-Ticket Agent
 
 ## 1. Summary metrics
 
 | Metric | Value |
 |---|---:|
-| Total scenarios | {metrics.total_scenarios} |
-| Success rate | {metrics.success_rate:.0%} |
-| Avg nodes visited | {metrics.avg_nodes_visited:.1f} |
-| Total retries | {metrics.total_retries} |
-| Total interrupts (approvals) | {metrics.total_interrupts} |
-| Resume success | {metrics.resume_success} |
+| Total scenarios | 7 |
+| Success rate | 100% |
+| Avg nodes visited | 6.0 |
+| Total retries | 2 |
+| Total interrupts (approvals) | 2 |
+| Resume success | False |
 
 ## 2. Architecture
 
@@ -63,7 +42,13 @@ short strings/refs are stored so checkpoints stay small.
 
 | Scenario | Expected | Actual | Success | Retries | Interrupts | Appr. req | Appr. seen |
 |---|---|---|:--:|--:|--:|:--:|:--:|
-{rows}
+| S01_simple | simple | simple | ✅ | 0 | 0 | no | no |
+| S02_tool | tool | tool | ✅ | 0 | 0 | no | no |
+| S03_missing | missing_info | missing_info | ✅ | 0 | 0 | no | no |
+| S04_risky | risky | risky | ✅ | 0 | 1 | yes | yes |
+| S05_error | error | error | ✅ | 1 | 0 | no | no |
+| S06_delete | risky | risky | ✅ | 0 | 1 | yes | yes |
+| S07_dead_letter | error | error | ✅ | 1 | 0 | no | no |
 
 ## 5. Failure analysis
 
@@ -86,11 +71,3 @@ resumed after a process restart (crash recovery / time-travel via `get_state_his
 Add idempotency keys to side-effecting nodes, replace the mock `tool_node` with real tool
 adapters, add the Postgres checkpointer for multi-worker deployments, and export metrics to
 the configured Langfuse project for live observability.
-"""
-
-
-def write_report(metrics: MetricsReport, output_path: str | Path) -> None:
-    """Write the rendered report to a file."""
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report(metrics), encoding="utf-8")

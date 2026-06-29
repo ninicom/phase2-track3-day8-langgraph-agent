@@ -9,7 +9,7 @@ from typing import Annotated
 import typer
 import yaml
 
-from .graph import build_graph
+from .graph import build_graph, run_to_completion
 from .metrics import MetricsReport, metric_from_state, summarize_metrics, write_metrics
 from .persistence import build_checkpointer
 from .report import write_report
@@ -33,7 +33,7 @@ def run_scenarios(
     for scenario in scenarios:
         state = initial_state(scenario)
         run_config = {"configurable": {"thread_id": state["thread_id"]}}
-        final_state = graph.invoke(state, config=run_config)
+        final_state = run_to_completion(graph, state, run_config)
         metrics.append(metric_from_state(final_state, scenario.expected_route.value, scenario.requires_approval))
     report = summarize_metrics(metrics)
     write_metrics(report, output)
